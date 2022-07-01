@@ -1,6 +1,6 @@
 <h1 align="center"> Controlled Car </h1>
 <p  align="center"> 
-	This is a cart controlled by radio (NRF24L01), by bluetooth (HC-06) and by infrared. <br>
+	This is a cart controlled by radio (NRF24L01), by bluetooth (HC-06) and by infrared, made with arduino. <br>
 	:construction:  Project under construction  :construction:
 </p>
 
