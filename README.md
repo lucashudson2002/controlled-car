@@ -18,16 +18,19 @@
 - base de acrílico ou PVC ?
 - Arduino nano
 - 4 motores e 4 rodas
-- ponte H ?
-- regulador de tensão buck step down ?
-- alimentação ? + suporte
+- 1 TB6612FNG
+- 1 regulador de tensão buck step down
+- 3 pilhas 3.7V ou 2 pilhas de 4.2V
 - 1 NRF24L01
+- 1 servo motor
 - 1 HC-05
 - 1 Receptor IR e controle IR
 - 1 HC-SR04
 - 1 buzzer
-- Divisor de tensão e led vermelhor par ler/sinalizar nível de bateria
+- Chave liga/desliga 
+- Divisor de tensão e led vermelhor para ler/sinalizar nível de bateria
 - Capacitores, resistores, diodo
+- Porcas, parafusos, pino de conectores, fios, borne
 
 <h2 align="center">  ✔️ Técnicas e tecnologias utilizadas </h2>
 
