@@ -7,6 +7,7 @@
 <h2 align="center">  🔗 Resumo do projeto </h2>
 
 - Será utilizado o motor driver TB6612FNG para controlar os 4 motores.
+- Para controlar a ponte-H TB6612FNG, utilizarei a biblioteca que eu mesmo criei: <a href="https://github.com/lucashudson2002/TB6612FNG" target="_blank">github.com/lucashudson2002/TB6612FNG</a>.
 - Carro controlado através de 3 métodos diferentes (rádio, bluetooth, infravermelho).
 - Possui um senhor de distância na frente (HC-SR04) para impedir que o carro bata com algum obstáculo, ou para evitar obstáculo caso esteja no modo de controle autônomo.
 - O regulador buck step down vai fornecer +6V ao motores através da ponte-H, a bateria vai direto alimentar o arduino.
@@ -18,6 +19,8 @@
 
 - Controlled-Car-main.ino -> arquivo que fica o programa principal
 - diagrama.fzz -> arquivo que fica todas as ligações do projeto
+- TB6612FNG.h -> declaração dos atributos/métodos da classe TB6612FNG para controle dos motores
+- TB6612FNG.cpp -> definição dos métodos da classe TB6612FNG
 
 <h2 align="center">  🛠️ Lista de itens </h2>
 
