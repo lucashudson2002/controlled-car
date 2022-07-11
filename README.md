@@ -6,10 +6,10 @@
 
 <h2 align="center">  🔗 Resumo do projeto </h2>
 
-- Será utilizado o motor driver TB6612FNG para controlar os 4 motores.
+- Será utilizado o dual motor driver TB6612FNG para controlar os 4 motores.
 - Para controlar a ponte-H TB6612FNG, utilizarei a biblioteca que eu mesmo criei: <a href="https://github.com/lucashudson2002/TB6612FNG" target="_blank">github.com/lucashudson2002/TB6612FNG</a>.
 - Carro controlado através de 3 métodos diferentes (rádio, bluetooth, infravermelho).
-- Possui um senhor de distância na frente (HC-SR04) para impedir que o carro bata com algum obstáculo, ou para evitar obstáculo caso esteja no modo de controle autônomo.
+- Possui um senhor de distância na frente (HC-SR04) para impedir que o carro bata com algum obstáculo, ou para evitar obstáculo caso esteja no modo de controle autônomo. Usado também uma biblioteca criada por mim <a href="https://github.com/lucashudson2002/HCSR04" target="_blank">github.com/lucashudson2002/HCSR04</a>.
 - O regulador buck step down vai fornecer +6V ao motores através da ponte-H, a bateria vai direto alimentar o arduino.
 - Existe um limite mínimo de tensão da bateria para que o robô funcione normalmente, abaixo desse nível será sinalizado mau funcionamento.
 - Possui um buzzer para emitir sinais sonoros, como de buzina, de aviso de baixa bateria, ou de aviso de obstáculo.
