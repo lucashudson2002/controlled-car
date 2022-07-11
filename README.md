@@ -19,8 +19,6 @@
 
 - Controlled-Car-main.ino -> arquivo que fica o programa principal
 - diagrama.fzz -> arquivo que fica todas as ligações do projeto
-- TB6612FNG.h -> declaração dos atributos/métodos da classe TB6612FNG para controle dos motores
-- TB6612FNG.cpp -> definição dos métodos da classe TB6612FNG
 
 <h2 align="center">  🛠️ Lista de itens </h2>
 
