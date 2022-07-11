@@ -1,6 +1,6 @@
 //**bibliotecas**
 #include <Servo.h>
-//ultrassonico
+#include <HCSR04.h>
 #include <TB6612FNG.h>
 #include <RF24.h>
 #include <SPI.h>
@@ -36,8 +36,11 @@
 #define DIVISOR A7
 
 //**variáveis**
-//B são as rodas da esquerda, e A são as rodas da direita
-TB6612FNG robo(IN1B, IN2B, IN1A, IN2A, PWMB, PWMA, STBY);
+TB6612FNG robo(IN1B, IN2B, IN1A, IN2A, PWMB, PWMA, STBY); //B são as rodas da esquerda, e A são as rodas da direita
+Servo servo;
+HCSR04 hcsr04(TRIG, ECHO);
+//objeto pro infrared
+//objeto pro nrf
 
 //**declaração das funções**
 void autonomo();
@@ -48,6 +51,8 @@ void radio();
 void setup(){
 	Serial.begin(9600);
   robo.begin();
+  hcsr04.begin();
+  servo.attach(SERVO);
 }
 
 void loop(){
