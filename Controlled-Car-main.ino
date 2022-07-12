@@ -49,7 +49,7 @@ HCSR04 hcsr04(TRIG, ECHO);
 //objeto pro infrared
 //objeto pro nrf
 byte direcao = 's';
-byte modo;
+byte modo = 2;
 
 //**declaração das funções**
 void autonomo();
@@ -62,6 +62,9 @@ void setup(){
   robo.begin();
   hcsr04.begin();
   servo.attach(SERVO);
+  pinMode(LED, OUTPUT);
+  pinMode(BUZZER, OUTPUT);
+  pinMode(DIVISOR, INPUT);
 }
 
 void loop(){
