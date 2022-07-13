@@ -41,6 +41,8 @@
 #define BLUETOOTH 2
 #define INFRARED 3
 #define RADIO 4
+#define VOLTAGE_MIN 7 //testar se essa é a mínima
+#define VOLTAGE_MAX 11.1 //3 lítios de 3.7V
 
 //**variáveis**
 TB6612FNG robo(IN1B, IN2B, IN1A, IN2A, PWMB, PWMA, STBY); //B são as rodas da esquerda, e A são as rodas da direita
@@ -70,34 +72,37 @@ void setup(){
   pinMode(LED, OUTPUT);
   pinMode(BUZZER, OUTPUT);
   pinMode(DIVISOR, INPUT);
+
+  robo.set_pwm(255);
 }
 
 void loop(){
-	if (on_off){
-		switch(modo){
-			case AUTONOMO:
-				autonomo();
-				break;
-			case BLUETOOTH:
-				bluetooth();
-				break;
-			case INFRARED:
-				infrared();
-				break;
-			case RADIO:
-				radio();
-				break;
-			default:
-				autonomo();
-				modo = AUTONOMO;
-		}
-	}
-	else{
-		verify_on_off();
-	}
-	
-	send_data();
-	
+  if (on_off){
+    switch(modo){
+      case AUTONOMO:
+        autonomo();
+        break;
+      case BLUETOOTH:
+        bluetooth();
+        break;
+      case INFRARED:
+        infrared();
+        break;
+      case RADIO:
+        radio();
+        break;
+      default:
+        autonomo();
+        modo = AUTONOMO;
+    }
+  }
+  else{
+    verify_on_off();
+  }
+
+  measure_battery();
+  send_data();
+  
   switch(direcao){
     case 's':
       robo.stop();
@@ -138,101 +143,108 @@ void autonomo(){
     
   }
 }
+
 //x- y- m- off on brake
 void bluetooth(){
-	if (Serial.avaialble()){
-		String received;
-		received = Serial.readStringUntil('.');
-		received.replace('.', '');
-		switch(received[0]){
-			case 'x':
-				int joystickx, joysticky;
-				received.replace('x-', '');
-				joystickx = received.toInt();
-				received = Serial.readStringUntil('.');
-				received.replace('.', '');
-				received.replace('y-', '');
-				joysticky = received.toInt();
-				if (joystickx == 512 && joysticky == 512)
-					direcao = 's';
-				else if (joystickx > 412 && joystickx < 612 && joysticky > 512)
-					direcao = 'f';
-				else if (joystickx > 412 && joystickx < 612 && joysticky < 512)
-					direcao = 'b';
-				else if (joystickx < 512 && joysticky > 412 && joysticky < 612)
-					direcao = 'l';
-				else if (joystickx > 512 && joysticky > 412 && joysticky < 612)
-					direcao = 'r';
-				else if (joystickx < 412 && joysticky > 512)
-					direcao = 'f'+'l';
-				else if (joystickx > 612 && joysticky > 512)
-					direcao = 'f'+'r';
-				else if (joystickx < 412 && joysticky < 512)
-					direcao = 'b'+'l';
-				else if (joystickx > 612 && joysticky < 512)
-					direcao = 'b'+'r';
-				break;
-			case 'm':
-				received.replace('m-', '');
-				if (received == "autonomo")
-					modo = AUTONOMO;
-				else if (received == "bluetooth")
-					modo = BLUETOOTH;
-				else if (receivfed == "infrared")
-					modo = INFRARED;
-				else if (received == "radio")
-					modo = RADIO;
-				break;
-			case 'o':
-				if (received == "off"){
-					dircao = 's';
-					on_off = false;
-				}
-				else if (received == "on")
-					on_off = true;
-				break;
-			case 'b':
-				if (received == "brake")
-					direcao = 'B';
-				break;
-		}
-	}
+  if (Serial.avaialble()){
+    String received;
+    received = Serial.readStringUntil('.');
+    received.replace('.', '');
+    switch(received[0]){
+      case 'x':
+        int joystickx, joysticky;
+        received.replace('x-', '');
+        joystickx = received.toInt();
+        received = Serial.readStringUntil('.');
+        received.replace('.', '');
+        received.replace('y-', '');
+        joysticky = received.toInt();
+        if (joystickx == 512 && joysticky == 512)
+          direcao = 's';
+        else if (joystickx > 412 && joystickx < 612 && joysticky < 512)
+          direcao = 'f';
+        else if (joystickx > 412 && joystickx < 612 && joysticky > 512)
+          direcao = 'b';
+        else if (joystickx < 512 && joysticky > 412 && joysticky < 612)
+          direcao = 'l';
+        else if (joystickx > 512 && joysticky > 412 && joysticky < 612)
+          direcao = 'r';
+        else if (joystickx < 412 && joysticky < 512)
+          direcao = 'f'+'l';
+        else if (joystickx > 612 && joysticky < 512)
+          direcao = 'f'+'r';
+        else if (joystickx < 412 && joysticky > 512)
+          direcao = 'b'+'l';
+        else if (joystickx > 612 && joysticky > 512)
+          direcao = 'b'+'r';
+        break;
+      case 'm':
+        received.replace('m-', '');
+        if (received == "autonomo")
+          modo = AUTONOMO;
+        else if (received == "bluetooth")
+          modo = BLUETOOTH;
+        else if (receivfed == "infrared")
+          modo = INFRARED;
+        else if (received == "radio")
+          modo = RADIO;
+        break;
+      case 'o':
+        if (received == "off"){
+          dircao = 's';
+          on_off = false;
+        }
+        else if (received == "on")
+          on_off = true;
+        break;
+      case 'b':
+        if (received == "brake")
+          direcao = 'B';
+        break;
+    }
+  }
 }
+
 void infrared(){
 
 }
+
 void radio(){
 
 }
 
 void verify_on_off(){
-	if (Serial.available()){
-		String received;
-		received = Serial.readStringUntil('.');
-		received.replace('.', '');
-		switch(received[0]){
-			case 'o':
-				if (received == "on")
-					on_off = true;
-				break;
-			case 'm':
-				received.replace('m-', '');
-				if (received == "autonomo")
-					modo = AUTONOMO;
-				else if (received == "bluetooth")
-					modo = BLUETOOTH;
-				else if (receivfed == "infrared")
-					modo = INFRARED;
-				else if (received == "radio")
-					modo = RADIO;
-				break;
-		}
-	}
+  if (Serial.available()){
+    String received;
+    received = Serial.readStringUntil('.');
+    received.replace('.', '');
+    switch(received[0]){
+      case 'o':
+        if (received == "on")
+          on_off = true;
+        break;
+      case 'm':
+        received.replace('m-', '');
+        if (received == "autonomo")
+          modo = AUTONOMO;
+        else if (received == "bluetooth")
+          modo = BLUETOOTH;
+        else if (receivfed == "infrared")
+          modo = INFRARED;
+        else if (received == "radio")
+          modo = RADIO;
+        break;
+    }
+  }
 }
 
 void send_data(){
-	
+  
 }
+
 void measure_battery(){
-	
+  int sensorValue = analogRead(DIVISOR);
+  float voltage = sensorValue*5.0/341.0;
+  voltage = constrain(voltage, VOLTAGE_MIN, VOLTAGE_MAX)
+  battery = map(voltage, VOLTAGE_MIN, VOLTAGE_MAX, 0, 100);
 }
