@@ -51,6 +51,9 @@ GitHub: https://github.com/lucashudson2002/Controlled-Car
 #define VOLTAGE_MIN 7 //testar se essa é a mínima
 #define VOLTAGE_MAX 11.1 //3 lítios de 3.7V, na realidade é essa?
 #define U_TURN 1000 //testar
+#define CENTER_JOYSTICK 512
+#define INFERIOR_JOYSTICK 412
+#define SUPERIOR_JOYSTICK 612
 
 //**VARIABLES**
 TB6612FNG robot(IN1B, IN2B, IN1A, IN2A, PWMB, PWMA, STBY); //B são as rodas da esquerda, e A são as rodas da direita
@@ -63,10 +66,11 @@ byte mode = AUTONOMOUS;
 bool on_off = true;
 byte battery;
 bool horn = false;
+float proportion = 0.5;
 
 //**DECLARATION OF FUNCTIONS**
 void autonomous();
-//FAZER: variar velocidade da direção e angulo da curva de acordo com o joystick
+//FAZER: variar velocidade da direção (pwm) e angulo da curva (proportion) de acordo com o joystick
 void bluetooth();
 void infrared();
 void radio();
@@ -142,16 +146,16 @@ void loop(){
       robot.right();
       break;
     case 'f'+'l':
-      robot.forward_left();
+      robot.forward_left(proportion);
       break;
     case 'f'+'r':
-      robot.forward_right();
+      robot.forward_right(proportion);
       break;
     case 'b'+'l':
-      robot.backward_left();
+      robot.backward_left(proportion);
       break;
     case 'b'+'r':
-      robot.backward_right();
+      robot.backward_right(proportion);
       break;
   }
 }
@@ -219,21 +223,21 @@ void bluetooth(){
         joysticky = received.toInt();
         if (joystickx == 512 && joysticky == 512)
           dir = 's';
-        else if (joystickx > 412 && joystickx < 612 && joysticky < 512)
+        else if (joystickx > INFERIOR_JOYSTICK && joystickx < SUPERIOR_JOYSTICK && joysticky < CENTER_JOYSTICK)
           dir = 'f';
-        else if (joystickx > 412 && joystickx < 612 && joysticky > 512)
+        else if (joystickx > INFERIOR_JOYSTICK && joystickx < SUPERIOR_JOYSTICK && joysticky > CENTER_JOYSTICK)
           dir = 'b';
-        else if (joystickx < 512 && joysticky > 412 && joysticky < 612)
+        else if (joystickx < CENTER_JOYSTICK && joysticky > INFERIOR_JOYSTICK && joysticky < SUPERIOR_JOYSTICK)
           dir = 'l';
-        else if (joystickx > 512 && joysticky > 412 && joysticky < 612)
+        else if (joystickx > CENTER_JOYSTICK && joysticky > INFERIOR_JOYSTICK && joysticky < SUPERIOR_JOYSTICK)
           dir = 'r';
-        else if (joystickx < 412 && joysticky < 512)
+        else if (joystickx < INFERIOR_JOYSTICK && joysticky < CENTER_JOYSTICK)
           dir = 'f'+'l';
-        else if (joystickx > 612 && joysticky < 512)
+        else if (joystickx > SUPERIOR_JOYSTICK && joysticky < CENTER_JOYSTICK)
           dir = 'f'+'r';
-        else if (joystickx < 412 && joysticky > 512)
+        else if (joystickx < INFERIOR_JOYSTICK && joysticky > CENTER_JOYSTICK)
           dir = 'b'+'l';
-        else if (joystickx > 612 && joysticky > 512)
+        else if (joystickx > SUPERIOR_JOYSTICK && joysticky > CENTER_JOYSTICK)
           dir = 'b'+'r';
         break;
       case 'm':
