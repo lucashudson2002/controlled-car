@@ -1,3 +1,10 @@
+/*
+Program: Controlled Car (Autonomous, Bluetooth, Infrared, Radio)
+Author: Lucas Dias Hudson
+Date: July 13, 2022
+GitHub: https://github.com/lucashudson2002/Controlled-Car
+*/
+
 //**LIBRARIES**
 #include <Servo.h>
 #include <HCSR04.h>
@@ -63,10 +70,11 @@ void autonomous();
 void bluetooth();
 void infrared();
 void radio();
-void verify_on_off();
-void send_data();
+
 void measure_battery();
 bool obstacle();
+void send_data();
+void verify_on_off();
 
 void setup(){
   Serial.begin(9600);
@@ -80,6 +88,7 @@ void setup(){
   robot.set_pwm(255);
   servo.write(90);
   //FAZER: interrupção pro led de acordo com a bateria e buzzer tocar nível crítico
+  delay(1000);
 }
 
 void loop(){
@@ -159,17 +168,17 @@ void autonomous(){
     dist_right = hcsr04.distance_cm();
     servo.write(90);
     //os dois lados 100% livres, vira pra qualquer lado
-    if (dist_left == -1 && dist_right==-1){
+    if (dist_left == -1 && dist_right == -1){
       robot.right();
       delay(U_TURN/2);
     }
     //esquerda 100% livre, vai pra ela
-    else if(dist_left == -1 && dist_right!=-1){
+    else if(dist_left == -1 && dist_right !=-1){
       robot.left();
       delay(U_TURN/2);
     }
     //direita 100% livre, vai pra ela
-    else if(dist_left != -1 && dist_right==-1){
+    else if(dist_left != -1 && dist_right == -1){
       robot.right();
       delay(U_TURN/2);
     }
@@ -266,6 +275,45 @@ void radio(){
 
 }
 
+void measure_battery(){
+  int sensorValue = analogRead(BATTERY);
+  float voltage = sensorValue*5.0/341.0;
+  voltage = constrain(voltage, VOLTAGE_MIN, VOLTAGE_MAX);
+  battery = map(voltage, VOLTAGE_MIN, VOLTAGE_MAX, 0, 100);
+}
+
+bool obstacle(){
+  if (hcsr04.distance_cm() < DIST_MIN_CM){
+    robot.brake();
+    delay(100);
+    robot.backward();
+    delay(500);
+    robot.brake();
+    return true;
+  }
+  return false;
+}
+
+void send_data(){
+  String data = "b-"+String(battery)+".";
+  Serial.print(data);
+  switch (mode){
+    case AUTONOMOUS:
+      data = "m-autonomous.";
+      break;
+    case BLUETOOTH:
+      data = "m-bluetooth.";
+      break;
+    case INFRARED:
+      data = "m-infrared.";
+      break;
+    case RADIO:
+      data = "m-radio.";
+      break;
+  }
+  Serial.print(data);
+}
+
 void verify_on_off(){
   if (Serial.available()){
     String received;
@@ -293,43 +341,4 @@ void verify_on_off(){
         break;
     }
   }
-}
-
-void send_data(){
-  String data = "b-"+String(battery)+".";
-  Serial.print(data);
-  switch (mode){
-    case AUTONOMOUS:
-      data = "m-autonomous.";
-      break;
-    case BLUETOOTH:
-      data = "m-bluetooth.";
-      break;
-    case INFRARED:
-      data = "m-infrared.";
-      break;
-    case RADIO:
-      data = "m-radio.";
-      break;
-  }
-  Serial.print(data);
-}
-
-void measure_battery(){
-  int sensorValue = analogRead(BATTERY);
-  float voltage = sensorValue*5.0/341.0;
-  voltage = constrain(voltage, VOLTAGE_MIN, VOLTAGE_MAX);
-  battery = map(voltage, VOLTAGE_MIN, VOLTAGE_MAX, 0, 100);
-}
-
-bool obstacle(){
-  if (hcsr04.distance_cm() < DIST_MIN_CM){
-    robot.brake();
-    delay(100);
-    robot.backward();
-    delay(500);
-    robot.brake();
-    return true;
-  }
-  return false;
 }
