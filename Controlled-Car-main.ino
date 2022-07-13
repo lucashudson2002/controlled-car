@@ -67,15 +67,16 @@ bool on_off = true;
 byte battery;
 bool horn = false;
 float proportion = 0.5;
+byte pwm = 255;
 
-//**DECLARATION OF FUNCTIONS**
+//**DECLARATION OF FUNCTIONS FOR THE 4 MODES**
 void autonomous();
-//FAZER: variar velocidade da direção (pwm) e angulo da curva (proportion) de acordo com o joystick
-void bluetooth();
+void bluetooth(); //FAZER: variar velocidade da direção (pwm) e angulo da curva (proportion) de acordo com o joystick
 void infrared();
 void radio();
-
+//**DECLARATION OF OTHERS FUNCTIONS**
 void measure_battery();
+void nod();
 bool obstacle();
 void send_data();
 void verify_on_off();
@@ -89,9 +90,9 @@ void setup(){
   pinMode(BUZZER, OUTPUT);
   pinMode(BATTERY, INPUT);
 
-  robot.set_pwm(255);
+  robot.set_pwm(pwm);
   servo.write(90);
-  //FAZER: interrupção pro led de acordo com a bateria e buzzer tocar nível crítico
+  //FAZER: interrupção pro led de acordo com a bateria e buzzer tocar no nível crítico
   delay(1000);
 }
 
@@ -115,10 +116,8 @@ void loop(){
         mode = AUTONOMOUS;
     }
   }
-  else{
-    verify_on_off();
-  }
-
+  
+  verify_on_off();
   measure_battery();
   send_data();
   if (horn)
@@ -164,11 +163,11 @@ void loop(){
 void autonomous(){
   if (obstacle()){
     float dist_left, dist_right;
-    servo.write(0); //0 é esquerda mesmo?
-    while (servo.read() != 0){}
-    dist_left = hcsr04.distance_cm();
-    servo.write(180); //180 é direita mesmo?
+    servo.write(180);
     while (servo.read() != 180){}
+    dist_left = hcsr04.distance_cm();
+    servo.write(0);
+    while (servo.read() != 0){}
     dist_right = hcsr04.distance_cm();
     servo.write(90);
     //os dois lados 100% livres, vira pra qualquer lado
@@ -204,6 +203,7 @@ void autonomous(){
     robot.forward();
   }
   dir = 'f';
+  robot.set_pwm(255);
 }
 
 //x- y- m- off on brake horn
@@ -269,6 +269,7 @@ void bluetooth(){
         break;
     }
   }
+  nod();
 }
 
 void infrared(){
@@ -280,10 +281,23 @@ void radio(){
 }
 
 void measure_battery(){
-  int sensorValue = analogRead(BATTERY);
-  float voltage = sensorValue*5.0/341.0;
+  int sensor = analogRead(BATTERY);
+  float voltage = sensor*5.0/341.0;
   voltage = constrain(voltage, VOLTAGE_MIN, VOLTAGE_MAX);
   battery = map(voltage, VOLTAGE_MIN, VOLTAGE_MAX, 0, 100);
+}
+
+void nod(){
+  if (obstacle()){
+    servo.write(135);
+    while (servo.read() != 135){}
+    servo.write(45);
+    while (servo.read() != 45){}
+    servo.write(112);
+    while (servo.read() != 112){}
+    servo.write(90);
+    while (servo.read() != 90){}
+  }
 }
 
 bool obstacle(){
@@ -325,7 +339,11 @@ void verify_on_off(){
     received.replace(".", "");
     switch(received[0]){
       case 'o':
-        if (received == "on")
+        if (received == "off"){
+          dir = 's';
+          on_off = false;
+        }
+        else if (received == "on")
           on_off = true;
         break;
       case 'm':
