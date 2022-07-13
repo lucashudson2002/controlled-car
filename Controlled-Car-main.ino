@@ -54,6 +54,7 @@ GitHub: https://github.com/lucashudson2002/Controlled-Car
 #define CENTER_JOYSTICK 512
 #define INFERIOR_JOYSTICK 412
 #define SUPERIOR_JOYSTICK 612
+#define WAITING_TIME_SEND 1000
 
 //**VARIABLES**
 TB6612FNG robot(IN1B, IN2B, IN1A, IN2A, PWMB, PWMA, STBY); //B são as rodas da esquerda, e A são as rodas da direita
@@ -68,18 +69,19 @@ byte battery;
 bool horn = false;
 float proportion = 0.5;
 byte pwm = 255;
+unsigned long waiting_time_send = 0;
 
 //**DECLARATION OF FUNCTIONS FOR THE 4 MODES**
 void autonomous();
 void bluetooth(); //FAZER: variar velocidade da direção (pwm) e angulo da curva (proportion) de acordo com o joystick
-void infrared();
-void radio();
+void infrared(); //FAZER
+void radio(); //FAZER
 //**DECLARATION OF OTHERS FUNCTIONS**
 void measure_battery();
 void nod();
 bool obstacle();
 void send_data();
-void verify_on_off();
+void verify_bluetooth();
 
 void setup(){
   Serial.begin(9600);
@@ -116,8 +118,8 @@ void loop(){
         mode = AUTONOMOUS;
     }
   }
-  
-  verify_on_off();
+  if (mode != BLUETOOTH || !on_off)
+    verify_bluetooth();
   measure_battery();
   send_data();
   if (horn)
@@ -313,26 +315,29 @@ bool obstacle(){
 }
 
 void send_data(){
-  String data = "b-"+String(battery)+".";
-  Serial.print(data);
-  switch (mode){
-    case AUTONOMOUS:
-      data = "m-autonomous.";
-      break;
-    case BLUETOOTH:
-      data = "m-bluetooth.";
-      break;
-    case INFRARED:
-      data = "m-infrared.";
-      break;
-    case RADIO:
-      data = "m-radio.";
-      break;
+  if (millis() - waiting_time_send > WAITING_TIME_SEND){
+    waiting_time_send = millis();
+    String data = "b-"+String(battery)+".";
+    Serial.print(data);
+    switch (mode){
+      case AUTONOMOUS:
+        data = "m-autonomous.";
+        break;
+      case BLUETOOTH:
+        data = "m-bluetooth.";
+        break;
+      case INFRARED:
+        data = "m-infrared.";
+        break;
+      case RADIO:
+        data = "m-radio.";
+        break;
+    }
+    Serial.print(data);
   }
-  Serial.print(data);
 }
 
-void verify_on_off(){
+void verify_bluetooth(){
   if (Serial.available()){
     String received;
     received = Serial.readStringUntil('.');
