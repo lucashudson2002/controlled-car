@@ -3,6 +3,11 @@ Program: Controlled Car (Autonomous, Bluetooth, Infrared, Radio)
 Author: Lucas Dias Hudson
 Date: July 13, 2022
 GitHub: https://github.com/lucashudson2002/Controlled-Car
+Prerequisites:
+  https://github.com/lucashudson2002/TB6612FNG
+  https://github.com/lucashudson2002/HCSR04
+  https://github.com/nRF24/RF24
+  https://github.com/Arduino-IRremote/Arduino-IRremote
 */
 
 //**LIBRARIES**
@@ -51,9 +56,6 @@ GitHub: https://github.com/lucashudson2002/Controlled-Car
 #define VOLTAGE_MIN 7 //testar se essa é a mínima
 #define VOLTAGE_MAX 11.1 //3 lítios de 3.7V, na realidade é essa?
 #define U_TURN 1000 //testar
-#define CENTER_JOYSTICK 512
-#define INFERIOR_JOYSTICK 412
-#define SUPERIOR_JOYSTICK 612
 #define WAITING_TIME_SEND 1000
 
 //**VARIABLES**
@@ -126,7 +128,8 @@ void loop(){
     digitalWrite(BUZZER, HIGH);
   else
     digitalWrite(BUZZER, LOW);
-  
+
+  robot.set_pwm(pwm);
   switch(dir){
     case 's':
       robot.stop();
@@ -208,38 +211,32 @@ void autonomous(){
   robot.set_pwm(255);
 }
 
-//x- y- m- off on brake horn
+//d- m- off on brake horn p-
 void bluetooth(){
   if (Serial.available()){
     String received;
     received = Serial.readStringUntil('.');
     received.replace(".", "");
     switch(received[0]){
-      case 'x':
-        int joystickx, joysticky;
-        received.replace("x-", "");
-        joystickx = received.toInt();
-        received = Serial.readStringUntil('.');
-        received.replace(".", "");
-        received.replace("y-", "");
-        joysticky = received.toInt();
-        if (joystickx == 512 && joysticky == 512)
+      case 'd':
+        received.replace("d-", "");
+        if (received == "s")
           dir = 's';
-        else if (joystickx > INFERIOR_JOYSTICK && joystickx < SUPERIOR_JOYSTICK && joysticky < CENTER_JOYSTICK)
+        else if (received == "f")
           dir = 'f';
-        else if (joystickx > INFERIOR_JOYSTICK && joystickx < SUPERIOR_JOYSTICK && joysticky > CENTER_JOYSTICK)
+        else if (received == "b")
           dir = 'b';
-        else if (joystickx < CENTER_JOYSTICK && joysticky > INFERIOR_JOYSTICK && joysticky < SUPERIOR_JOYSTICK)
+        else if (received == "l")
           dir = 'l';
-        else if (joystickx > CENTER_JOYSTICK && joysticky > INFERIOR_JOYSTICK && joysticky < SUPERIOR_JOYSTICK)
+        else if (received == "r")
           dir = 'r';
-        else if (joystickx < INFERIOR_JOYSTICK && joysticky < CENTER_JOYSTICK)
+        else if (received == "fl")
           dir = 'f'+'l';
-        else if (joystickx > SUPERIOR_JOYSTICK && joysticky < CENTER_JOYSTICK)
+        else if (received == "ft")
           dir = 'f'+'r';
-        else if (joystickx < INFERIOR_JOYSTICK && joysticky > CENTER_JOYSTICK)
+        else if (received == "bl")
           dir = 'b'+'l';
-        else if (joystickx > SUPERIOR_JOYSTICK && joysticky > CENTER_JOYSTICK)
+        else if (received == "br")
           dir = 'b'+'r';
         break;
       case 'm':
@@ -268,6 +265,10 @@ void bluetooth(){
        case 'h':
         if (received == "horn")
           horn = !horn;
+        break;
+      case 'p':
+        received.replace("p-", "");
+        pwm = received.toInt();
         break;
     }
   }
