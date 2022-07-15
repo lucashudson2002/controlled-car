@@ -17,8 +17,9 @@
 
 <h2 align="center">  📁 Descrição dos arquivos </h2>
 
-- Controlled-Car-main.ino -> arquivo que fica o programa principal
-- diagrama.fzz -> arquivo que fica todas as ligações do projeto
+- folder <strong>main</strong> -> onde fica o programa principal do carro
+- folder <strong>transmitter</strong> -> onde fica o programa do controle NRF24L01 para controla o carro
+-  <strong>diagrama.fzz</strong> -> arquivo que fica todas as ligações do projeto
 
 <h2 align="center">  🛠️ Lista de itens </h2>
 
