@@ -1,7 +1,7 @@
 /*
 Program: Controlled Car (Autonomous, Bluetooth, Infrared, Radio)
 Author: Lucas Dias Hudson
-Date: July 13, 2022
+Date: July 15, 2022
 GitHub: https://github.com/lucashudson2002/Controlled-Car
 Prerequisites:
   https://github.com/lucashudson2002/TB6612FNG
