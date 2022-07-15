@@ -211,7 +211,7 @@ void autonomous(){
   robot.set_pwm(255);
 }
 
-//d- m- off on brake horn p-
+//d- m- off on brake horn p- a-
 void bluetooth(){
   if (Serial.available()){
     String received;
@@ -275,6 +275,10 @@ void bluetooth(){
         received.replace("p-", "");
         pwm = received.toInt();
         robot.set_pwm(pwm);
+        break;
+      case 'a':
+        received.replace("a-", "");
+        proportion = received.toFloat();
         break;
     }
   }
