@@ -56,12 +56,13 @@ Prerequisites:
 #define VOLTAGE_MIN 7 //testar se essa é a mínima
 #define VOLTAGE_MAX 11.1 //3 lítios de 3.7V, na realidade é essa?
 #define U_TURN 1000 //testar
-#define WAITING_TIME_SEND 1000
+#define WAITING_TIME_SEND 100
 
 //**VARIABLES**
 TB6612FNG robot(IN1B, IN2B, IN1A, IN2A, PWMB, PWMA, STBY); //B são as rodas da esquerda, e A são as rodas da direita
 Servo servo;
-HCSR04 hcsr04(TRIG, ECHO);
+//HCSR04 hcsr04(TRIG, ECHO);
+UltraSonicDistanceSensor distanceSensor(TRIG, ECHO);
 //objeto pro infrared
 //objeto pro nrf
 byte dir = 's';
@@ -75,7 +76,7 @@ unsigned long waiting_time_send = 0;
 
 //**DECLARATION OF FUNCTIONS FOR THE 4 MODES**
 void autonomous();
-void bluetooth(); //FAZER: variar velocidade da direção (pwm) e angulo da curva (proportion) de acordo com o joystick
+void bluetooth(); //FAZER: variar MAIS velocidade da direção (pwm) e angulo da curva (proportion) de acordo com o joystick
 void infrared(); //FAZER
 void radio(); //FAZER
 //**DECLARATION OF OTHERS FUNCTIONS**
@@ -88,7 +89,7 @@ void verify_bluetooth();
 void setup(){
   Serial.begin(9600);
   robot.begin();
-  hcsr04.begin();
+  //hcsr04.begin();
   servo.attach(SERVO);
   pinMode(LED, OUTPUT);
   pinMode(BUZZER, OUTPUT);
@@ -120,6 +121,7 @@ void loop(){
         mode = AUTONOMOUS;
     }
   }
+  
   if (mode != BLUETOOTH || !on_off)
     verify_bluetooth();
   measure_battery();
@@ -129,7 +131,6 @@ void loop(){
   else
     digitalWrite(BUZZER, LOW);
 
-  robot.set_pwm(pwm);
   switch(dir){
     case 's':
       robot.stop();
@@ -170,10 +171,12 @@ void autonomous(){
     float dist_left, dist_right;
     servo.write(180);
     while (servo.read() != 180){}
-    dist_left = hcsr04.distance_cm();
+    //dist_left = hcsr04.distance_cm();
+    dist_left = distanceSensor.measureDistanceCm();
     servo.write(0);
     while (servo.read() != 0){}
-    dist_right = hcsr04.distance_cm();
+    //dist_right = hcsr04.distance_cm();
+    dist_right = distanceSensor.measureDistanceCm();
     servo.write(90);
     //os dois lados 100% livres, vira pra qualquer lado
     if (dist_left == -1 && dist_right == -1){
@@ -215,8 +218,8 @@ void autonomous(){
 void bluetooth(){
   if (Serial.available()){
     String received;
-    received = Serial.readStringUntil('.');
-    received.replace(".", "");
+    received = Serial.readStringUntil('/');
+    received.replace("/", "");
     switch(received[0]){
       case 'd':
         received.replace("d-", "");
@@ -232,7 +235,7 @@ void bluetooth(){
           dir = 'r';
         else if (received == "fl")
           dir = 'f'+'l';
-        else if (received == "ft")
+        else if (received == "fr")
           dir = 'f'+'r';
         else if (received == "bl")
           dir = 'b'+'l';
@@ -240,15 +243,20 @@ void bluetooth(){
           dir = 'b'+'r';
         break;
       case 'm':
+        byte mode_;
         received.replace("m-", "");
         if (received == "autonomous")
-          mode = AUTONOMOUS;
+          mode_ = AUTONOMOUS;
         else if (received == "bluetooth")
-          mode = BLUETOOTH;
+          mode_ = BLUETOOTH;
         else if (received == "infrared")
-          mode = INFRARED;
+          mode_ = INFRARED;
         else if (received == "radio")
-          mode = RADIO;
+          mode_ = RADIO;
+        if (mode_ != mode){
+          mode = mode_;
+          dir = 's';
+        }
         break;
       case 'o':
         if (received == "off"){
@@ -268,7 +276,10 @@ void bluetooth(){
         break;
       case 'p':
         received.replace("p-", "");
-        pwm = received.toInt();
+        if (dir != 's' || dir != 'B'){
+          pwm = received.toInt();
+          robot.set_pwm(pwm);
+        }
         break;
     }
   }
@@ -304,7 +315,9 @@ void nod(){
 }
 
 bool obstacle(){
-  if (hcsr04.distance_cm() < DIST_MIN_CM){
+  //float distance = hcsr04.distance_cm();
+  float distance = distanceSensor.measureDistanceCm();
+  if (distance < DIST_MIN_CM && distance != -1 && distance != 0 ){
     robot.brake();
     delay(100);
     robot.backward();
@@ -318,20 +331,20 @@ bool obstacle(){
 void send_data(){
   if (millis() - waiting_time_send > WAITING_TIME_SEND){
     waiting_time_send = millis();
-    String data = "b-"+String(battery)+".";
+    String data = "b-"+String(battery)+"/";
     Serial.print(data);
     switch (mode){
       case AUTONOMOUS:
-        data = "m-autonomous.";
+        data = "m-autonomous/";
         break;
       case BLUETOOTH:
-        data = "m-bluetooth.";
+        data = "m-bluetooth/";
         break;
       case INFRARED:
-        data = "m-infrared.";
+        data = "m-infrared/";
         break;
       case RADIO:
-        data = "m-radio.";
+        data = "m-radio/";
         break;
     }
     Serial.print(data);
@@ -341,8 +354,8 @@ void send_data(){
 void verify_bluetooth(){
   if (Serial.available()){
     String received;
-    received = Serial.readStringUntil('.');
-    received.replace(".", "");
+    received = Serial.readStringUntil('/');
+    received.replace("/", "");
     switch(received[0]){
       case 'o':
         if (received == "off"){
@@ -353,15 +366,20 @@ void verify_bluetooth(){
           on_off = true;
         break;
       case 'm':
+        int mode_;
         received.replace("m-", "");
         if (received == "autonomous")
-          mode = AUTONOMOUS;
+          mode_ = AUTONOMOUS;
         else if (received == "bluetooth")
-          mode = BLUETOOTH;
+          mode_ = BLUETOOTH;
         else if (received == "infrared")
-          mode = INFRARED;
+          mode_ = INFRARED;
         else if (received == "radio")
-          mode = RADIO;
+          mode_ = RADIO;
+        if (mode_ != mode){
+          mode = mode_;
+          dir = 's';
+        }
         break;
       case 'h':
         if (received == "horn")
