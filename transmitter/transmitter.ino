@@ -16,8 +16,8 @@
 #define JOYSTICK_BTN 2//brake
 #define TOGGLE 3//alternar modo entre radio e autonomous
 #define BTN 4//horn enquanto estiver clicando no botão
-#define CE
-#define CSN
+#define CE 9
+#define CSN 10
 
 //**OTHERS DEFINE**
 #define CENTER_JOY_X 512.0 //testar
@@ -26,25 +26,30 @@
 #define SUP_JOY 612.0
 #define RAD2DEG 180/3.1415926
 
-//**VARIABLES**
+//**VARIABLES OF READING**
 int joy_x = CENTER_JOY_X;
 int joy_y = CENTER_JOY_Y;
-char dir = 's';
-byte pwm = 0;
-float prop = 1;
+bool btn_brake_c = 0;
 char prev_dir = 's';
 byte prev_pwm = 0;
 float prev_prop = 1;
+bool prev_btn_horn = false;
+bool prev_mode = false;
+bool prev_btn_brake = false;
+//**VARIABLES TO SEND**
+char dir = 's';
+byte pwm = 0;
+float prop = 1;
+bool btn_horn = false;
+bool mode = false;
+bool btn_brake = false;
 
-
-//**CALCULATION FUNCTIONS**
+//**DECLARATION OF FUNCTIONS**
 void reading();
 void calculate_direction();
 void calculate_pwm();
 void calculate_prop();
 void send_data();
-
-//pinMode(JOYSTICK_X, INPUT);
 
 void setup() {
   pinMode(JOYSTICK_X, INPUT);
@@ -61,9 +66,27 @@ void loop() {
   calculate_prop();
   send_data();
 }
-//horn brake modo
-void reading(){
 
+//**DEFINITION OF FUNCTIONS**
+void reading(){
+  joy_x = analogRead(JOYSTICK_X);
+  joy_y = analogRead(JOYSTICK_Y);
+  
+  if (!digitalRead(BTN))
+    btn_horn = true;
+  else
+    btn_horn = false;
+    
+  mode = digitalRead(TOGGLE);
+  
+  btn_brake = false;
+  if(!digitalRead(JOYSTICK_BTN)) 
+    btn_brake_c = true;
+  if(digitalRead(JOYSTICK_BTN) && btn_brake_c)
+  {
+     btn_brake_c = false;
+     btn_brake = true;
+  } 
 }
 
 void calculate_direction() {
@@ -93,7 +116,7 @@ void calculate_pwm() {
     pwm = 255;
   else
     pwm = radius * 255 / 350;
-  }
+}
 
 void calculate_prop() {
   float m = (float)(joy_y - INF_JOY)/(joy_x - SUP_JOY);
@@ -120,5 +143,17 @@ void send_data() {
   if (prop != prev_prop) {
     //send prop
     prev_prop = prop;
+  }
+  if (mode != prev_mode) {
+    //send 1 (simbolizando troca no toggle)
+    prev_mode = mode;
+  }
+  if (btn_horn != prev_btn_horn) {
+    //send horn
+    prev_btn_horn = btn_horn;
+  }
+  if (btn_brake != prev_btn_brake) {
+    //send brake
+    prev_btn_brake = btn_brake;
   }
 }
