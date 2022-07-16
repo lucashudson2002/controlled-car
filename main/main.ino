@@ -1,7 +1,7 @@
 /*
 Program: Controlled Car (Autonomous, Bluetooth, Infrared, Radio)
 Author: Lucas Dias Hudson
-Date: July 15, 2022
+Date: July 16, 2022
 GitHub: https://github.com/lucashudson2002/Controlled-Car
 Prerequisites:
   https://github.com/lucashudson2002/TB6612FNG
@@ -15,6 +15,7 @@ Prerequisites:
 #include <HCSR04.h>
 #include <TB6612FNG.h>
 #include <RF24.h>
+#include <nRF24L01.h>
 #include <SPI.h>
 #include <IRremote.h>
 
@@ -75,15 +76,18 @@ unsigned long waiting_time_send = 0;
 
 //**DECLARATION OF FUNCTIONS FOR THE 4 MODES**
 void autonomous();
-void bluetooth(); //FAZER: variar MAIS velocidade da direção (pwm) e angulo da curva (proportion) de acordo com o joystick
+void bluetooth();
 void infrared(); //FAZER
 void radio(); //FAZER
+
 //**DECLARATION OF OTHERS FUNCTIONS**
 void measure_battery();
 void nod();
 bool obstacle();
 void send_data();
 void verify_bluetooth();
+void verify_radio();
+void verify_infrared();
 
 void setup(){
   Serial.begin(9600);
@@ -123,6 +127,10 @@ void loop(){
   
   if (mode != BLUETOOTH || !on_off)
     verify_bluetooth();
+  if (mode != RADIO)
+    verify_radio(); //FAZER
+  if (mode != INFRARED)
+    verify_infrared();
   measure_battery();
   send_data();
   if (horn)
@@ -289,8 +297,9 @@ void infrared(){
 
 }
 
+//dir pwm prop mode horn brake
 void radio(){
-
+  
 }
 
 void measure_battery(){
@@ -318,9 +327,11 @@ bool obstacle(){
   if (distance < DIST_MIN_CM && distance != -1 && distance != 0 ){
     robot.brake();
     delay(100);
+    robot.set_pwm(255);
     robot.backward();
     delay(500);
     robot.brake();
+    robot.set_pwm(pwm);
     return true;
   }
   return false;
@@ -385,4 +396,12 @@ void verify_bluetooth(){
         break;
     }
   }
+}
+
+void verify_radio(){
+  //se receber mudança no toggle
+}
+
+void verify_infrared(){
+  //se receber botão onf/off
 }
