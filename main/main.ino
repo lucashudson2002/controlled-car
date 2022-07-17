@@ -1,7 +1,7 @@
 /*
 Program: Controlled Car (Autonomous, Bluetooth, Infrared, Radio)
 Author: Lucas Dias Hudson
-Date: July 16, 2022
+Date: July 17, 2022
 GitHub: https://github.com/lucashudson2002/Controlled-Car
 Prerequisites:
   https://github.com/lucashudson2002/TB6612FNG
@@ -138,6 +138,7 @@ void loop(){
   else
     digitalWrite(BUZZER, LOW);
 
+  robot.set_pwm(pwm);
   switch(dir){
     case 's':
       robot.stop();
@@ -213,10 +214,10 @@ void autonomous(){
       robot.left();
       delay(U_TURN/2);
     }
-    robot.forward();
+    robot.brake();
   }
   dir = 'f';
-  robot.set_pwm(255);
+  pwm = 255;
 }
 
 //d- m- off on brake horn p- a-
@@ -282,7 +283,6 @@ void bluetooth(){
       case 'p':
         received.replace("p-", "");
         pwm = received.toInt();
-        robot.set_pwm(pwm);
         break;
       case 'a':
         received.replace("a-", "");
