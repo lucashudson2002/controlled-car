@@ -1,0 +1,48 @@
+# Various Altium files
+*.PrjPCBStructure
+*.SchDocPreview
+*.PcbDocPreview
+__Previews
+*.PrjPcbStructure
+*.Dat
+*.REP 
+*.TLT
+*.LOG
+*.log
+*.htm
+*.$$$
+debug.log
+
+#useless dirs
+Project\ Logs
+
+#History
+History
+
+#Exports, but not manual ones
+exports/*
+!exports/manual
+
+# Various Proteus files
+
+/target
+/lib
+/classes
+/checkouts
+pom.xml
+pom.xml.asc
+*.jar
+*.class
+.lein-deps-sum
+.lein-failures
+.lein-plugins
+.lein-repl-history
+push
+*.nrepl*
+*.workspace
+*.pdsbak
+*.DO
+*.EDF
+*.xml
+*.sts
+*.rte
