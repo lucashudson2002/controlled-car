@@ -46,3 +46,7 @@ push
 *.xml
 *.sts
 *.rte
+*.html
+*.drc
+
+Project Outputs for *
